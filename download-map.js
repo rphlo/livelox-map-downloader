@@ -18,7 +18,7 @@ const main = async (liveloxUrl) => {
     const data = await res.json()
     const mapUrl = data.map.url;
     const bound = data.map.boundingQuadrilateral.vertices
-    const route = data.courses[0].controls
+    const route = data.courses.map(c=>c.controls)
     const mapImg = await loadImage(mapUrl)
     const [outCanvas, bounds] = drawRoute(mapImg, bound, route)
     fs.writeFileSync(`map_${bounds[3].lat}_${bounds[3].lon}_${bounds[2].lat}_${bounds[2].lon}_${bounds[1].lat}_${bounds[1].lon}_${bounds[0].lat}_${bounds[0].lon}_.jpeg`, outCanvas.toBuffer('image/jpeg', 0.8));
