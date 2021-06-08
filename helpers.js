@@ -1,8 +1,8 @@
 const {createCanvas} = require('canvas');
 const { LatLon, cornerCalTransform } = require('./utils');
 
-const drawRoute = (img, origBounds, routes) => {
-    const canvas =  createCanvas(img.width*2, img.height*2);
+const drawRoute = (img, origBounds, routes, res) => {
+    const canvas =  createCanvas(Math.round(img.width/res), Math.round(img.height/res));
     const bounds = origBounds.map(p=>new LatLon(p.latitude, p.longitude))
     const ctx = canvas.getContext('2d');
   
