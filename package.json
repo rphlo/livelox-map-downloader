@@ -1,7 +1,8 @@
 {
   "dependencies": {
-    "canvas": "^2.8.0",
+    "canvas": "2.6.1",
     "express": "^4.17.1",
+    "jszip": "^3.6.0",
     "node-fetch": "^2.6.1"
   },
   "devDependencies": {
