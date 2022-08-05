@@ -1,11 +1,14 @@
 {
   "dependencies": {
-    "canvas": "2.6.1",
+    "canvas": "=2.6.1",
     "express": "^4.17.1",
     "jszip": "^3.6.0",
     "node-fetch": "^2.6.1"
   },
   "devDependencies": {
     "vercel": "^23.0.0"
+  },
+  "scripts": {
+    "vercel-build": "yum install gcc-c++ cairo-devel pango-devel libjpeg-turbo-devel giflib-devel libuuid-devel libmount-devel && cp /lib64/{libuuid,libmount,libblkid}.so.1 node_modules/canvas/build/Release/"
   }
 }

@@ -21,31 +21,60 @@ const getMap = async (req, res, next) => {
     }
     let data = {}
     try {
-        const res = await fetch("https://www.livelox.com/Data/ClassBlob", {
+        const res = await fetch("https://www.livelox.com/Data/ClassInfo", {
             "headers": {
                 "accept": "application/json",
                 "content-type": "application/json",
+                "X-Requested-With": "XMLHttpRequest",
             },
-            "body": JSON.stringify({"classIds":[classId],"courseIds":null,"relayLegs":[],"relayLegGroupIds":[],"routeReductionProperties":{"distanceTolerance":1,"speedTolerance":0.1},"includeMap":true,"includeCourses":true,"skipStoreInCache":false}),
+            "body": JSON.stringify({
+                "classIds":[classId],
+                "courseIds":null,
+                "relayLegs":[],
+                "relayLegGroupIds":[],
+                "includeMap":true,
+                "includeCourses":true,
+                "skipStoreInCache":false
+            }),
             "method": "POST"
         });
         data = await res.json()
     } catch (e) {
         return res.status(400).send('could not reach livelox server')
     }
-    let mapUrl, bound, resolution, route, name
+    const eventData = data.general
+    const blobUrl = eventData?.classBlobUrl
+    if (!blobUrl) {
+        return res.status(400).send('cannot not figure blob url')
+    }
+    let blobData = null
     try {
-        mapUrl = data.map.url;
-        bound = data.map.boundingQuadrilateral.vertices
-        resolution = data.map.resolution
-        route = data.courses.map(c=>c.controls)
-        name = data.map.name
+        const res = await fetch(blobUrl, {
+            "headers": {
+                "accept": "application/json",
+                "content-type": "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+            }
+        });
+        blobData = await res.json()
+    } catch (e) {
+        return res.status(400).send('could not reach blob url')
+    }
+
+    let mapUrl, mapBound, mapResolution, route, mapName
+    try {
+        mapData = blobData.map
+        mapUrl = mapData.url;
+        mapBound = mapData.boundingQuadrilateral.vertices
+        mapResolution = mapData.resolution
+        route = blobData.courses.map((c) => c.controls)
+        mapName = mapData.name
     } catch (e) {
         return res.status(400).send('could not parse livelox data')
     }
     try {
         const mapImg = await loadImage(mapUrl)
-        const [outCanvas, bounds] = drawRoute(mapImg, bound, route, resolution)
+        const [outCanvas, bounds] = drawRoute(mapImg, mapBound, route, mapResolution)
         const imgBlob = outCanvas.toBuffer('image/jpeg', 0.8)
         let buffer
         let mime
@@ -53,10 +82,10 @@ const getMap = async (req, res, next) => {
         if (!req.body.type || req.body.type === 'jpeg') {
             buffer = imgBlob
             mime = 'image/jpeg'
-            filename = `${name}_${bounds[3].lat}_${bounds[3].lon}_${bounds[2].lat}_${bounds[2].lon}_${bounds[1].lat}_${bounds[1].lon}_${bounds[0].lat}_${bounds[0].lon}_.jpeg`
+            filename = `${mapName}_${bounds[3].lat}_${bounds[3].lon}_${bounds[2].lat}_${bounds[2].lon}_${bounds[1].lat}_${bounds[1].lon}_${bounds[0].lat}_${bounds[0].lon}_.jpeg`
         } else if(req.body.type === 'kmz') {
             buffer = await saveKMZ(
-                name,
+                mapName,
                 {
                     top_left: bounds[3],
                     top_right: bounds[2],
@@ -66,7 +95,7 @@ const getMap = async (req, res, next) => {
                 imgBlob
             )
             mime = 'application/vnd.google-earth.kmz'
-            filename = `${name}.kmz`
+            filename = `${mapName}.kmz`
         } else {
             return res.status(400).send('invalid type' )
         }
