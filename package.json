@@ -9,7 +9,5 @@
   "devDependencies": {
     "vercel": "^23.0.0"
   },
-  "scripts": {
-    "vercel-build": "yum install gcc-c++ cairo-devel pango-devel libjpeg-turbo-devel giflib-devel libuuid-devel libmount-devel && cp /lib64/{libuuid,libmount,libblkid}.so.1 node_modules/canvas/build/Release/"
-  }
+  "scripts": {}
 }
