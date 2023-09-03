@@ -1,5 +1,5 @@
 #! /usr/bin/env node 
-const { loadImage } = require('canvas')
+const { loadImage } = require('@napi-rs/canvas');
 const url = require('url')
 const fetch = require('node-fetch')
 const express = require('express')
@@ -76,7 +76,7 @@ const getMap = async (req, res, next) => {
     try {
         const mapImg = await loadImage(mapUrl)
         const [outCanvas, bounds] = drawRoute(mapImg, mapBound, route, mapResolution)
-        const imgBlob = outCanvas.toBuffer('image/jpeg', 0.8)
+        const imgBlob = outCanvas.toBuffer('image/png')
         const outImgBlob = await sharp(imgBlob).webp().toBuffer()
         let buffer
         let mime

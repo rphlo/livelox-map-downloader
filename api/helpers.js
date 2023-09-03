@@ -1,4 +1,4 @@
-const {createCanvas} = require('canvas');
+const {createCanvas} = require('@napi-rs/canvas');
 const { LatLon, cornerCalTransform } = require('./utils');
 const JSZip = require('jszip');
 
