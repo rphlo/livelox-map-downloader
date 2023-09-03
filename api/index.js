@@ -5,6 +5,7 @@ const fetch = require('node-fetch')
 const express = require('express')
 const stream = require('stream')
 const { drawRoute, saveKMZ } = require('./helpers')
+const sharp = require('sharp');
 
 const app = express()
 
@@ -76,12 +77,13 @@ const getMap = async (req, res, next) => {
         const mapImg = await loadImage(mapUrl)
         const [outCanvas, bounds] = drawRoute(mapImg, mapBound, route, mapResolution)
         const imgBlob = outCanvas.toBuffer('image/jpeg', 0.8)
+        const outImgBlob = await sharp(imgBlob).webp().toBuffer()
         let buffer
         let mime
         let filename
-        if (!req.body.type || req.body.type === 'jpeg') {
-            buffer = imgBlob
-            mime = 'image/jpeg'
+        if (!req.body.type || req.body.type === 'webp') {
+            buffer = outImgBlob
+            mime = 'image/webp'
             filename = `${mapName}_${bounds[3].lat}_${bounds[3].lon}_${bounds[2].lat}_${bounds[2].lon}_${bounds[1].lat}_${bounds[1].lon}_${bounds[0].lat}_${bounds[0].lon}_.jpeg`
         } else if(req.body.type === 'kmz') {
             buffer = await saveKMZ(
@@ -92,7 +94,7 @@ const getMap = async (req, res, next) => {
                     bottom_right: bounds[1],
                     bottom_left: bounds[0]
                 },
-                imgBlob
+                outImgBlob
             )
             mime = 'application/vnd.google-earth.kmz'
             filename = `${mapName}.kmz`
